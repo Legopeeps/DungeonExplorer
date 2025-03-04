@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Media;
 
 namespace DungeonExplorer
 {
@@ -11,12 +10,11 @@ namespace DungeonExplorer
         public Game()
         {
             // Initialize the game with one room and one player
-
+            Player player = new Player("PlayerName", 100);
         }
         public void Start()
         {
-            // Change the playing logic into true and populate the while loop
-            bool playing = false;
+            bool playing = true;
             while (playing)
             {
                 // Code your playing logic here
