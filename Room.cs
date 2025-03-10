@@ -9,7 +9,7 @@
             this.description = description;
         }
 
-        public string GetDescription()
+        private string GetDescription()
         {
             return description;
         }
