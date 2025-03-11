@@ -5,8 +5,8 @@ namespace DungeonExplorer
 {
     public class Player
     {
-        public string Name { get; set; }
-        public int Health {get; set; }
+        public string Name { get; set;}
+        public int Health {get; set;}
         private List<string> inventory = new List<string>();
 
         public Player(string name, int health) //needs to be public to be accessed by the game class
@@ -22,7 +22,14 @@ namespace DungeonExplorer
         }
         public string InventoryContents()
         {
-            return string.Join(", ", inventory); //returns the list as a string, each item separated by a comma
+            if (inventory.Count == 0) //if the inventory is empty
+            {
+                return "Your inventory is empty."; 
+            }
+            else
+            {
+                return $"Your inventory contains: {string.Join(", ", inventory)}"; //outputs the inventory list as a string, each item separated by a comma
+            }
         }
         public void PlayerHealth()
         {

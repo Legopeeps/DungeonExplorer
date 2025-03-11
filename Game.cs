@@ -10,10 +10,12 @@ namespace DungeonExplorer
 
         public Game() //needs to be public to be accessed by the Program class
         {
-            // Construct the player (with a placeholder name which will be updated later, as well as the player's health)
+            // Construct the player with a placeholder name which will be updated once the player input's their name,
+            // also contains the player's health value
             player = new Player("PlayerName", 100);
             
-            // Construct the room (with the description of the room prebaked into the code, later in development this will be randomised)
+            // Construct the room with the description of the room prebaked into the code,
+            // later in development this will be randomised between multiple different rooms
             currentRoom = new Room("You are in a dark and dingy room, with seemingly no exits aside from a crumbly wall. There is a bomb on the floor, ready to be picked up.");
         }
         public void Start()
@@ -28,6 +30,7 @@ namespace DungeonExplorer
                 {
                     case "1":
                         Console.WriteLine("You have chosen to continue playing the game.");
+                        GameLoop();
                         startLoop = false;
                         break;
                     case "2":
@@ -42,14 +45,11 @@ namespace DungeonExplorer
         }
         private void GameLoop()
         {
-            //call stringValidation method to obtain the player's name and bring the variable back here (to Line 50)
+            //call StringValidation method to obtain the player's name and bring the variable back 
             Console.WriteLine("Please enter your name:");
-            //player needs to enter their name
-            //the variable 'name' needs to be assignned to the player class's name property
-            //when the game refers to the player, their name will then be displayed
-            //this has to be done through using set and get methods
             player.Name = StringValidation();
             Console.WriteLine($"Welcome, {player.Name}!");
+
             bool gameLoop = true;
             while (gameLoop)
             {
@@ -65,7 +65,7 @@ namespace DungeonExplorer
                         break; 
                     /*/
                     case "pick up":
-                        player.PickUpItem(item);
+                       // player.PickUpItem(item);
                         break;
                     case "inventory":
                         Inventory();
@@ -74,7 +74,7 @@ namespace DungeonExplorer
                         Health();
                         break;
                     case "location":
-                        Location();
+                       // Location();
                         break;
                     case "exit":
                         Exit();
@@ -88,7 +88,9 @@ namespace DungeonExplorer
                 }
             }
         }
-        private string StringValidation()
+        //string validation method to ensure that the player's name is not empty, otherwise player is prompted again
+        //this has been made reusable for any string that the player can input within the game, that isn't caught by a switch case
+        private string StringValidation() 
         {
             bool isValidated = false;
             string result = "";
@@ -118,7 +120,9 @@ namespace DungeonExplorer
         }
         private void Exit() //used to exit the game
         {
-            Console.WriteLine("Thank you for playing the Dungeon Explorer!");
+            Console.WriteLine($"Thank you for playing the Dungeon Explorer, {player.Name}!\n" +
+                $"Please press any key to exit the game.");
+            Console.ReadKey();
             Environment.Exit(0);
         }
         private void Inventory()
