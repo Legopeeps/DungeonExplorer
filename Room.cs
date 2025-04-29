@@ -2,10 +2,9 @@
 
 namespace DungeonExplorer
 {
-    public class Room
+    class Room : GameMap
     {
-        private string description;
-        private List<string> items;
+        
 
         /// <summary>
         /// Initialises the Room with a description and a list of items
@@ -52,6 +51,19 @@ namespace DungeonExplorer
         public void RemoveItem(string item) 
         {
             items.Remove(item);
+        }
+
+        //name, health of thge mosnter
+
+        public string  TestMethod(Dictionary<string, int> monsters)
+        {
+            KeyValuePair<string, int> strongestMonster = new KeyValuePair<string, int>("", 0);
+            foreach (KeyValuePair<string, int> monster in monsters)
+            {
+
+            }
+
+            return strongestMonster.Key;
         }
     }
 }
