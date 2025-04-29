@@ -3,10 +3,9 @@ using System.Collections.Generic;
 
 namespace DungeonExplorer
 {
-    public class Player
+    class Player : Creature
     {
-        public string Name { get; set;}
-        public int Health {get; set;}
+
         private List<string> inventory = new List<string>();
 
         /// <summary>
