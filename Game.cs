@@ -1,31 +1,26 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Runtime.InteropServices;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Xml;
 
 namespace DungeonExplorer
 {
     internal class Game
     {
         private Player player;
-        private Room currentRoom;
+        private GameMap gameMap;
 
-        /// <summary>
-        /// Constructor for the Game class, initialises the player and the room
-        /// </summary>
-        public Game() 
+        /// constructor for initializing the game with a player and a map
+        public Game()
         {
-            // Construct the player with a placeholder name which will be updated once the player input's their name,
-            // also contains the player's health value
             player = new Player("PlayerName", 100);
-
-            // Construct the room with the description of the room prebaked into the code,
-            // later in development this will be randomised between multiple different rooms
-            currentRoom = new Room("You are in a dark and dingy room, with seemingly no exits aside from a crumbly wall. There is a bomb on the floor, ready to be picked up.", new List<string> { "bomb" });
+            gameMap = new GameMapImplementation();
         }
 
         /// <summary>
-        /// Start method to begin the game, was used more as a debug tool to ensure the game was working as intended
-        /// however later decided that it also works as a menu for the game
+        /// main method to start the game
         /// </summary>
         public void Start()
         {
@@ -35,7 +30,7 @@ namespace DungeonExplorer
                 Console.WriteLine("Welcome to the Dungeon Explorer!");
                 Console.WriteLine("Would you like to play the game?\nType '1' to continue...\nType '2' to close the game...\n");
 
-                switch (Console.ReadLine().ToLower()) 
+                switch (Console.ReadLine().ToLower())
                 {
                     case "1":
                         Console.WriteLine("You have chosen to continue playing the game.");
@@ -52,17 +47,14 @@ namespace DungeonExplorer
                 }
             }
         }
-        /// <summary>
-        /// GameLoop method to run the game, contains the main functionality of the game
-        /// </summary>
+
+        
         private void GameLoop()
         {
-            //call StringValidation method to obtain the player's name and bring the variable back 
             Console.WriteLine("Please enter your name:");
             player.Name = StringValidation();
             Console.WriteLine($"Welcome, {player.Name}!");
 
-            //game loop to keep the game running until the player decides to exit
             bool gameLoop = true;
             while (gameLoop)
             {
@@ -71,25 +63,11 @@ namespace DungeonExplorer
                 string input = Console.ReadLine().ToLower();
                 switch (input)
                 {
-                    /*/
-                     * Implementing the Move method later, assignment only needs one room and no movement
-                     * case "move":
+                    case "move":
                         Move();
-                        break; 
-                    /*/
+                        break;
                     case "pick up":
-                        Console.WriteLine("What would you like to pick up?");
-                        string item = Console.ReadLine();
-                        if (currentRoom.GetItems().Contains(item))
-                        {
-                            player.PickUpItem(item);
-                            currentRoom.GetItems().Remove(item);
-                            Location();
-                        }
-                        else
-                        {
-                            Console.WriteLine("That item is not in the room.");
-                        }
+                        PickUpItem();
                         break;
                     case "inventory":
                         Inventory();
@@ -104,8 +82,35 @@ namespace DungeonExplorer
                         gameLoop = false;
                         Exit();
                         break;
+                    case "check stats":
+                        Console.WriteLine($"Your name is {player.Name}.");
+                        Console.WriteLine($"Your health is {player.Health}.");
+                        break;
+                    case "use Potion":
+                        if (player.InventoryContents().Contains("healing potion"))
+                        {
+                            player.AdjustHealth(20);
+                            Console.WriteLine("You used a Healing Potion. Health increased by 20.");
+                        }
+                        else
+                        {
+                            Console.WriteLine("You don't have a Healing Potion in your inventory.");
+                        }
+                        break;
+                    case "display available locations":
+                        gameMap.CurrentRoom.DisplayAvailableDirections();
+                        break;
+                    case "sort inventory":
+                        SortInventory();
+                        break;
+                    case "attack":
+                        Attack();
+                        break;
                     case "help":
                         Help();
+                        break;
+                    case "clear console":
+                        Console.Clear();
                         break;
                     default:
                         Console.WriteLine("Invalid command. Type 'help' for a list of commands.");
@@ -113,13 +118,8 @@ namespace DungeonExplorer
                 }
             }
         }
-        
-        /// <summary>
-        /// StringValidation method to ensure that the player's name is not empty, otherwise player is prompted again
-        /// This has been made reusable for any string that the player can input within the game, that isn't caught by a switch case
-        /// </summary>
-        /// <returns>The string the user inputs, i.e. when the name is passed through, the name will be returned if valid</returns>
-        private string StringValidation() 
+
+        private string StringValidation()
         {
             bool isValidated = false;
             string result = "";
@@ -138,54 +138,123 @@ namespace DungeonExplorer
             return result;
         }
 
-        /// <summary>
-        /// used to display the help menu
-        /// </summary>
-        private void Help() 
+        private void Help()
         {
-            Console.WriteLine("Welcome to the Dungeon Explorer Help Menu!!");
-            Console.WriteLine("You will always be in a room. You can move to another room by typing 'move'. [this will be implemented later, currently there is functionality for one room]");
-            Console.WriteLine("You can pick up an item by typing 'pick up'.");
-            Console.WriteLine("You can check your inventory by typing 'inventory'.");
-            Console.WriteLine("You can check your health by typing 'health'.");
-            Console.WriteLine("You can check your location by typing 'location'.");
-            Console.WriteLine("You can exit the game by typing 'exit'.");
+            Console.WriteLine("\n\n\t\tWelcome to the Dungeon Explorer Help Menu!!");
+            Console.WriteLine("You will always be in a room. You can move to another room by typing 'Move'.");
+            Console.WriteLine("You can pick up an item by typing 'Pick Up'.");
+            Console.WriteLine("You can check your inventory by typing 'Inventory'.");
+            Console.WriteLine("You can check your health by typing 'Health'.");
+            Console.WriteLine("You can check your location by typing 'Location'.");
+            Console.WriteLine("If there is an enemy, you can attack by typing 'attack'.");
+            Console.WriteLine("You can check your stats by typing 'Check Stats'.");
+            Console.WriteLine("You can use a healing potion by typing 'Use Potion'.");
+            Console.WriteLine("You can check the available locations by typing 'Display Available Locations'.");
+            Console.WriteLine("You can clear the console by typing 'Clear Console'.");
+            Console.WriteLine("You can exit the game by typing 'Exit'.\n\n");
         }
 
-        /// <summary>
-        /// Shows the player's inventory
-        /// </summary>
         private void Inventory()
         {
             Console.WriteLine(player.InventoryContents());
         }
 
-        /// <summary>
-        /// Shows the player's health
-        /// </summary>
         private void Health()
         {
-            player.PlayerHealth();
+            Console.WriteLine($"You have {player.PlayerHealth()} health remaining.\n");
         }
 
-        /// <summary>
-        /// Shows the player's location within the room
-        /// </summary>
         private void Location()
         {
-            Console.WriteLine(currentRoom.GetDescription());
+            Console.WriteLine(gameMap.CurrentRoom.GetDescription());
         }
 
-        /// <summary>
-        /// Method to explicitly exit the game
-        /// </summary>
-        private void Exit() //used to exit the game
+        private void Move()
+        {
+            Console.WriteLine("Which direction would you like to move? (Centre, Left, Right)");
+
+            string directionInput = Console.ReadLine().ToLower();
+            GameMap.Direction direction;
+
+            if (Enum.TryParse(directionInput, true, out direction))
+            {
+                if (gameMap.Move(direction))
+                {
+                    Console.WriteLine($"You move to the {direction} room.");
+                    Location();
+                }
+                else
+                {
+                    Console.WriteLine("You can't move in that direction.");
+                }
+            }
+            else
+            {
+                Console.WriteLine("Invalid direction. Please type 'centre', 'left', or 'right... maybe you can find a secret?");
+            }
+        }
+
+        private void PickUpItem()
+        {
+            Console.WriteLine("What would you like to pick up?");
+            string item = Console.ReadLine();
+
+            if (gameMap.CurrentRoom.GetItems().Contains(item))
+            {
+                player.PickUpItem(item);
+                gameMap.CurrentRoom.RemoveItem(item);
+                Location();
+            }
+            else
+            {
+                Console.WriteLine("That item is not in the room.");
+            }
+        }
+
+        private void Attack()
+        {
+            Creature creature = gameMap.CurrentRoom.creature;
+
+            if (creature != null)
+            {
+                Console.WriteLine("You attack the creature!");
+                player.Attack(creature);
+
+                if (creature is Monster monster && monster.Health > 0)
+                {
+                    Console.WriteLine("The creature fights back!");
+                    monster.Attack(player);
+                }
+                else
+                {
+                    Console.WriteLine("The creature has been defeated!");
+                }
+            }
+            else
+            {
+                Console.WriteLine("There is no creature to attack.");
+            }
+        }
+
+        //utilizing LINQ to sort the inventory
+        private void SortInventory()
+        {
+            Console.WriteLine("Inventory before sort:");
+            Console.WriteLine(player.InventoryContents());
+            Console.WriteLine("Inventory after sort:");
+            Console.WriteLine(player.SortedInventory());
+        }
+
+        private void Exit()
         {
             Console.WriteLine($"Thank you for playing the Dungeon Explorer, {player.Name}!\n" +
-                $"Please press any key to exit the game.");
+                "Please press any key to exit the game.");
             Console.ReadKey();
             Environment.Exit(0);
         }
-
+    }
+    class GameMapImplementation : GameMap
+    {
+        public GameMapImplementation() : base() { }
     }
 }
